@@ -47,7 +47,23 @@ metadata.attachmentSequence=
 
 metadata.userId=
 
+metadata.employeeId=
+
 metadata.date=
+
+metadata.creationDate=
+
+metadata.businessPurpose=
+
+metadata.description=
+
+metadata.zipCode=
+
+metadata.Reference=
+
+metadata.fromDate=
+
+metadata.toDate=
 
 commit.url=https://cloud.docfinity.com/<cust_id>/webservices/rest/indexing/commit
 
@@ -133,7 +149,9 @@ public class Psdocfinityinterface {
     }
 
     public void indexMetadata(String docFinityID, String expenseId, String attachmentLoc,
-                              String expenseLineId, String attachmentSequence, String operId, String date){
+                              String expenseLineId, String attachmentSequence, String operId, String date, String businessPurpose,
+                              String description, String zipCode, String reference, String fromDate, String toDate, String creationDate,
+                              String employeeId){
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
 
@@ -147,7 +165,8 @@ public class Psdocfinityinterface {
             post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
             post.setHeader("Content-Type", "application/json");
 
-            HttpEntity entity = new StringEntity(buildMetadataJSON_(docFinityID, expenseId, attachmentLoc, expenseLineId, attachmentSequence, operId, date));
+            HttpEntity entity = new StringEntity(buildMetadataJSON_(docFinityID, expenseId, attachmentLoc, expenseLineId,
+                    attachmentSequence, operId, date, businessPurpose, description, zipCode, reference, fromDate, toDate, creationDate, employeeId));
             post.setEntity(entity);
 
             response = client.execute(post);
@@ -209,7 +228,9 @@ public class Psdocfinityinterface {
     }
 
     private String buildMetadataJSON_(String docFinityID, String expenseId, String attachmentLoc,
-                                     String expenseLineId, String attachmentSequence, String operId, String date){
+                                     String expenseLineId, String attachmentSequence, String operId, String date,
+                                      String businessPurpose, String description, String zipCode, String reference,
+                                      String fromDate, String toDate, String creationDate, String employeeId){
         String json = null;
         try {
             DocumentIndexingDTO myArray = new DocumentIndexingDTO();
@@ -222,6 +243,14 @@ public class Psdocfinityinterface {
             myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentSequence"), documentTypeID, "STRING_VARIABLE", true, "AttachmentSequence", attachmentSequence));
             myArray.addDto(buildIndexDto(properties.getProperty("metadata.userId"), documentTypeID, "STRING_VARIABLE", true, "UserId", operId));
             myArray.addDto(buildIndexDto(properties.getProperty("metadata.date"), documentTypeID, "DATE", true, "Date", date));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.employeeId"), employeeId, "STRING_VARIABLE", true, "EmployeeId", employeeId));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.creationDate"), creationDate, "DATE", true, "CreationDate", creationDate));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.businessPurpose"), businessPurpose, "STRING_VARIABLE", true, "BusinessPurpose", businessPurpose));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.description"), description, "STRING_VARIABLE", true, "Description", description));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.zipCode"), description, "STRING_VARIABLE", true, "ZipCode", zipCode));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.Reference"), description, "STRING_VARIABLE", true, "Reference", reference));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.fromDate"), creationDate, "DATE", true, "FromDate", fromDate));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.toDate"), creationDate, "DATE", true, "ToDate", toDate));
 
             ObjectMapper objectMapper = new ObjectMapper();
             json = objectMapper.writeValueAsString(new DocumentIndexingDTO[]{myArray});
@@ -245,9 +274,10 @@ public class Psdocfinityinterface {
     }
 
     public static void main(String[] args){
-        Psdocfinityinterface docfinity = new Psdocfinityinterface("/Users/jfinlins/Downloads/docfinity.properties");
-        String docId = docfinity.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
-        docfinity.indexMetadata(docId, "1", "L", "1", "2", "JFINLINS", System.currentTimeMillis()+"");
+        Psdocfinityinterface docfinity = new Psdocfinityinterface("/Users/jfinlins/Downloads/docfinity/docfinity.properties");
+        String docId = docfinity.uploadFile("/Users/jfinlins/Downloads/docfinity/test.pdf", "JFINLINS");
+        docfinity.indexMetadata(docId, "1", "L", "1", "2", "JFINLINS", "",
+                "", "", "", "", "", "", "", "");
         docfinity.commitMetadata(docId, "JFINLINS");
     }
 }
