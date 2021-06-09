@@ -132,6 +132,10 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
 
+            int status = response.getCode();
+            if(status != 204 && status != 200) {
+                throw new Exception("Unable to create document.");
+            }
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
@@ -151,7 +155,7 @@ public class Psdocfinityinterface {
     public void indexMetadata(String docFinityID, String expenseId, String attachmentLoc,
                               String expenseLineId, String attachmentSequence, String operId, String date, String businessPurpose,
                               String description, String zipCode, String reference, String fromDate, String toDate, String creationDate,
-                              String employeeId){
+                              String employeeId) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
 
@@ -171,14 +175,20 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
 
+            int status = response.getCode();
+
+
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
-        }catch(Exception e){
-            e.printStackTrace();
+
+            if(status != 204 && status != 200) {
+                System.out.println(status);
+                throw new Exception("Unable to index metadata for document " + docFinityID + ".");
+            }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
             if(response != null){try{response.close();}catch(Exception e){}}
@@ -216,7 +226,7 @@ public class Psdocfinityinterface {
         }
     }
 
-    public void commitMetadata(String docFinityID, String operId){
+    public void commitMetadata(String docFinityID, String operId) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
 
@@ -243,6 +253,7 @@ public class Psdocfinityinterface {
             post.setEntity(entity);
 
             response = client.execute(post);
+            int status = response.getCode();
 
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -250,8 +261,9 @@ public class Psdocfinityinterface {
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
-        }catch(Exception e){
-            e.printStackTrace();
+            if(status != 204 && status != 200) {
+                throw new Exception("Unable to delete document " + docFinityID + ".");
+            }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
             if(response != null){try{response.close();}catch(Exception e){}}
@@ -304,7 +316,7 @@ public class Psdocfinityinterface {
         return dto;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         //This is to allow me to change this location without breaking your env.
         String propertiesFileLocation = System.getenv("propertiesFileLocation");
         if(propertiesFileLocation == null) {
