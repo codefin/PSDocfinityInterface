@@ -132,6 +132,10 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
 
+            int status = response.getCode();
+            if(status != 204 && status != 200) {
+                throw new Exception("Unable to create document.");
+            }
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
@@ -151,7 +155,7 @@ public class Psdocfinityinterface {
     public void indexMetadata(String docFinityID, String expenseId, String attachmentLoc,
                               String expenseLineId, String attachmentSequence, String operId, String date, String businessPurpose,
                               String description, String zipCode, String reference, String fromDate, String toDate, String creationDate,
-                              String employeeId){
+                              String employeeId) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
 
@@ -171,21 +175,58 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
 
+            int status = response.getCode();
+
+
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
-        }catch(Exception e){
-            e.printStackTrace();
+
+            if(status != 204 && status != 200) {
+                System.out.println(status);
+                throw new Exception("Unable to index metadata for document " + docFinityID + ".");
+            }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
             if(response != null){try{response.close();}catch(Exception e){}}
         }
     }
 
-    public void commitMetadata(String docFinityID, String operId){
+    public void deleteFile(String docFinityID, String operID) {
+        CloseableHttpClient client = null;
+        CloseableHttpResponse response = null;
+
+        try{
+            client = HttpClients.createDefault();
+            HttpPost post = new HttpPost(properties.getProperty("delete.servlet.url"));
+            post.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getProperty("api.key"));
+            String uuid = UUID.randomUUID().toString();
+            post.setHeader("X-XSRF-TOKEN", uuid);
+            post.setHeader("X-AUDITUSER", operID);
+            post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
+            post.setHeader("Content-Type", "application/json");
+
+            HttpEntity entity = new StringEntity("[\"" + docFinityID + "\"]");
+
+            post.setEntity(entity);
+
+            response = client.execute(post);
+            int status = response.getCode();
+            if(status != 204 && status != 200) {
+                throw new Exception("Unable to delete document " + docFinityID + ".");
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally{
+            if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
+            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
+        }
+    }
+
+    public void commitMetadata(String docFinityID, String operId) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
 
@@ -212,6 +253,7 @@ public class Psdocfinityinterface {
             post.setEntity(entity);
 
             response = client.execute(post);
+            int status = response.getCode();
 
             System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -219,8 +261,9 @@ public class Psdocfinityinterface {
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
-        }catch(Exception e){
-            e.printStackTrace();
+            if(status != 204 && status != 200) {
+                throw new Exception("Unable to delete document " + docFinityID + ".");
+            }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
             if(response != null){try{response.close();}catch(Exception e){}}
@@ -273,11 +316,26 @@ public class Psdocfinityinterface {
         return dto;
     }
 
-    public static void main(String[] args){
-        Psdocfinityinterface docfinity = new Psdocfinityinterface("/Users/jfinlins/Downloads/docfinity/docfinity.properties");
-        String docId = docfinity.uploadFile("/Users/jfinlins/Downloads/docfinity/test.pdf", "JFINLINS");
-        docfinity.indexMetadata(docId, "1", "L", "1", "2", "JFINLINS", "",
+    public static void main(String[] args) throws Exception {
+        //This is to allow me to change this location without breaking your env.
+        String propertiesFileLocation = System.getenv("propertiesFileLocation");
+        if(propertiesFileLocation == null) {
+            propertiesFileLocation = "/Users/jfinlins/Downloads/docfinity/docfinity.properties";
+        }
+        //This is to allow me to change this location without breaking your env.
+        String uploadFileLocation = System.getenv("uploadFileLocation");
+        if(uploadFileLocation == null) {
+            uploadFileLocation = "/Users/jfinlins/Downloads/docfinity/test.pdf";
+        }
+
+        String operId = "JFINLINS";
+        Psdocfinityinterface docfinity = new Psdocfinityinterface(propertiesFileLocation);
+        String docId = docfinity.uploadFile(uploadFileLocation, operId);
+        System.out.println(docId);
+        docfinity.indexMetadata(docId, "1", "L", "1", "2", operId, "",
                 "", "", "", "", "", "", "", "");
-        docfinity.commitMetadata(docId, "JFINLINS");
+        docfinity.commitMetadata(docId, operId);
+
+        docfinity.deleteFile(docId, operId);
     }
 }
