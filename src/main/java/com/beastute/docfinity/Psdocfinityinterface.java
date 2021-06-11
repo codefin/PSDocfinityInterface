@@ -15,13 +15,11 @@ copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-Author: Joe Finlinson - joe@beastute.com
 
 Instantiation of this class requires a properties file that contains information
 regarding meta-data ids and URL locations for calls
@@ -138,7 +136,7 @@ public class Psdocfinityinterface {
             }
             System.out.println(response);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = "";
+            String line;
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
                 sb.append(line);
@@ -174,7 +172,7 @@ public class Psdocfinityinterface {
             response = client.execute(post);
 
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = "";
+            String line;
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
@@ -185,7 +183,7 @@ public class Psdocfinityinterface {
             }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
         }
     }
 
@@ -251,7 +249,7 @@ public class Psdocfinityinterface {
 
             System.out.println(response);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = "";
+            String line;
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
@@ -260,7 +258,7 @@ public class Psdocfinityinterface {
             }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
         }
     }
 
@@ -274,20 +272,20 @@ public class Psdocfinityinterface {
             myArray.documentId = docFinityID;
             String documentTypeID = properties.getProperty("metadata.documentTypeId");
             myArray.documentTypeId = documentTypeID;
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseId"), documentTypeID, "STRING_VARIABLE", true, "ExpenseId", expenseId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentLoc"), documentTypeID, "STRING_VARIABLE", true, "AttachmentLoc", attachmentLoc));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseLineId"), documentTypeID, "STRING_VARIABLE", true, "ExpenseLineId", expenseLineId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentSequence"), documentTypeID, "STRING_VARIABLE", true, "AttachmentSequence", attachmentSequence));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.userId"), documentTypeID, "STRING_VARIABLE", true, "UserId", operId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.date"), documentTypeID, "DATE", true, "Date", date));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.employeeId"), employeeId, "STRING_VARIABLE", true, "EmployeeId", employeeId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.creationDate"), creationDate, "DATE", true, "CreationDate", creationDate));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.businessPurpose"), businessPurpose, "STRING_VARIABLE", true, "BusinessPurpose", businessPurpose));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.description"), description, "STRING_VARIABLE", true, "Description", description));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.zipCode"), description, "STRING_VARIABLE", true, "ZipCode", zipCode));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.Reference"), description, "STRING_VARIABLE", true, "Reference", reference));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.fromDate"), creationDate, "DATE", true, "FromDate", fromDate));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.toDate"), creationDate, "DATE", true, "ToDate", toDate));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseId"), documentTypeID, "STRING_VARIABLE", "ExpenseId", expenseId));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentLoc"), documentTypeID, "STRING_VARIABLE", "AttachmentLoc", attachmentLoc));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseLineId"), documentTypeID, "STRING_VARIABLE", "ExpenseLineId", expenseLineId));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentSequence"), documentTypeID, "STRING_VARIABLE", "AttachmentSequence", attachmentSequence));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.userId"), documentTypeID, "STRING_VARIABLE", "UserId", operId));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.date"), documentTypeID, "DATE", "Date", date));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.employeeId"), employeeId, "STRING_VARIABLE", "EmployeeId", employeeId));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.creationDate"), creationDate, "DATE", "CreationDate", creationDate));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.businessPurpose"), businessPurpose, "STRING_VARIABLE", "BusinessPurpose", businessPurpose));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.description"), description, "STRING_VARIABLE", "Description", description));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.zipCode"), description, "STRING_VARIABLE", "ZipCode", zipCode));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.Reference"), description, "STRING_VARIABLE", "Reference", reference));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.fromDate"), creationDate, "DATE", "FromDate", fromDate));
+            myArray.addDto(buildIndexDto(properties.getProperty("metadata.toDate"), creationDate, "DATE", "ToDate", toDate));
 
             ObjectMapper objectMapper = new ObjectMapper();
             json = objectMapper.writeValueAsString(new DocumentIndexingDTO[]{myArray});
@@ -299,12 +297,12 @@ public class Psdocfinityinterface {
     }
 
     private DocumentIndexingMetadataDto buildIndexDto(String metadataId, String docTypeId, String type,
-                                                      boolean overrideError, String metadataName, String value){
+                                                      String metadataName, String value){
         DocumentIndexingMetadataDto dto = new DocumentIndexingMetadataDto();
         dto.metadataId = metadataId;
         dto.documentTypeId = docTypeId;
         dto.type = type;
-        dto.overrideError = overrideError;
+        dto.overrideError = true;
         dto.metadataName = metadataName;
         dto.value = value;
         return dto;
