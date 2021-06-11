@@ -108,7 +108,7 @@ public class Psdocfinityinterface {
         }
     }
 
-    public String uploadFile(String filePath, String operID){
+    public String uploadFile(String filePath, String operID) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
         StringBuilder sb = new StringBuilder();
@@ -136,16 +136,14 @@ public class Psdocfinityinterface {
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to create document.");
             }
-            System.out.println(response.toString());
+            System.out.println(response);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
                 sb.append(line);
             }
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally{
+        } finally {
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
             if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
         }
@@ -175,18 +173,14 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
 
-            int status = response.getCode();
-
-
-            System.out.println(response.toString());
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
 
+            int status = response.getCode();
             if(status != 204 && status != 200) {
-                System.out.println(status);
                 throw new Exception("Unable to index metadata for document " + docFinityID + ".");
             }
         }finally{
@@ -242,7 +236,7 @@ public class Psdocfinityinterface {
 
             com.beastute.commit.Root root = new com.beastute.commit.Root();
             root.id = "UPLOADS";
-            ArrayList<String> list = new ArrayList<String>();
+            ArrayList<String> list = new ArrayList<>();
             list.add(docFinityID);
             root.documentIds = list;
 
@@ -255,14 +249,14 @@ public class Psdocfinityinterface {
             response = client.execute(post);
             int status = response.getCode();
 
-            System.out.println(response.toString());
+            System.out.println(response);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
                 System.out.println(line);
             }
             if(status != 204 && status != 200) {
-                throw new Exception("Unable to delete document " + docFinityID + ".");
+                throw new Exception("Unable to commit metadata document " + docFinityID + ".");
             }
         }finally{
             if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
