@@ -131,10 +131,10 @@ public class Psdocfinityinterface {
             response = client.execute(post);
 
             int status = response.getCode();
+            System.out.println("HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
-                throw new Exception("Unable to create document.");
+                throw new Exception("Unable to create document." + filePath + " user " + operID + " HTTP RESPONSE CODE: " + response);
             }
-            System.out.println(response);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line;
             while ((line = rd.readLine()) != null) {
@@ -142,8 +142,8 @@ public class Psdocfinityinterface {
                 sb.append(line);
             }
         } finally {
-            if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
+            if(client != null){try{client.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){}}
         }
         return sb.toString();
     }
@@ -178,12 +178,13 @@ public class Psdocfinityinterface {
             }
 
             int status = response.getCode();
+            System.out.println("HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
-                throw new Exception("Unable to index metadata for document " + docFinityID + ".");
+                throw new Exception("Unable to index metadata. docfinityId" + docFinityID + "operId " + operId + " HTTP RESPONSE CODE: " + response);
             }
         }finally{
-            if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
+            if(client != null){try{client.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){}}
         }
     }
 
@@ -207,14 +208,15 @@ public class Psdocfinityinterface {
 
             response = client.execute(post);
             int status = response.getCode();
+            System.out.println("HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
-                throw new Exception("Unable to delete document " + docFinityID + ".");
+                throw new Exception("Unable to delete document. docfinityId" + docFinityID + "operId " + operID + " HTTP RESPONSE CODE: " + response);
             }
         }catch(Exception e){
             e.printStackTrace();
         }finally{
-            if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
+            if(client != null){try{client.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){}}
         }
     }
 
@@ -257,8 +259,8 @@ public class Psdocfinityinterface {
                 throw new Exception("Unable to commit metadata document " + docFinityID + ".");
             }
         }finally{
-            if(client != null){try{client.close();}catch(Exception e){e.printStackTrace();}}
-            if(response != null){try{response.close();}catch(Exception e){e.printStackTrace();}}
+            if(client != null){try{client.close();}catch(Exception e){}}
+            if(response != null){try{response.close();}catch(Exception e){}}
         }
     }
 
