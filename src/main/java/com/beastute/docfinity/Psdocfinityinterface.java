@@ -91,223 +91,37 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.UUID;
 
-public class Psdocfinityinterface {
-
-    private Properties properties = null;
+public class Psdocfinityinterface extends BaseDocfinityInterface {
 
     public Psdocfinityinterface(String propsFile){
-        try {
-            FileInputStream fis = new FileInputStream(new File(propsFile));
-            properties = new Properties();
-            properties.load(fis);
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public String uploadFile(String filePath, String operID) throws Exception {
-        CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
-        StringBuilder sb = new StringBuilder();
-
-        try{
-            client = HttpClients.createDefault();
-            HttpPost post = new HttpPost(properties.getProperty("upload.servlet.url"));
-            post.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getProperty("api.key"));
-            String uuid = UUID.randomUUID().toString();
-            post.setHeader("X-XSRF-TOKEN", uuid);
-            post.setHeader("X-AUDITUSER", operID);
-            post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
-
-            File file = new File(filePath);
-            HttpEntity data = MultipartEntityBuilder.create()
-                    .setMode(HttpMultipartMode.LEGACY)
-                    .addBinaryBody("upload_files", file, ContentType.DEFAULT_BINARY, file.getName())
-                    .addTextBody("entryMethod", "", ContentType.DEFAULT_BINARY)
-                    .build();
-            post.setEntity(data);
-
-            response = client.execute(post);
-
-            int status = response.getCode();
-            System.out.println("HTTP RESPONSE CODE: " + response);
-            if(status != 204 && status != 200) {
-                throw new Exception("Unable to create document." + filePath + " user " + operID + " HTTP RESPONSE CODE: " + response);
-            }
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-                sb.append(line);
-            }
-        } finally {
-            if(client != null){try{client.close();}catch(Exception e){}}
-            if(response != null){try{response.close();}catch(Exception e){}}
-        }
-        return sb.toString();
+        super((propsFile));
     }
 
     public void indexMetadata(String docFinityID, String expenseId, String attachmentLoc,
                               String expenseLineId, String attachmentSequence, String operId, String date, String businessPurpose,
                               String description, String zipCode, String reference, String fromDate, String toDate, String creationDate,
                               String employeeId) throws Exception {
-        CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
 
-        try{
-            client = HttpClients.createDefault();
-            HttpPost post = new HttpPost(properties.getProperty("index.metadata.url"));
-            post.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getProperty("api.key"));
-            String uuid = UUID.randomUUID().toString();
-            post.setHeader("X-XSRF-TOKEN", uuid);
-            post.setHeader("X-AUDITUSER", operId);
-            post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
-            post.setHeader("Content-Type", "application/json");
+        DocumentIndexingDTO documentIndexingDTO = new DocumentIndexingDTO();
+        documentIndexingDTO.documentId = docFinityID;
+        String documentTypeID = properties.getProperty("metadata.documentTypeId");
+        documentIndexingDTO.documentTypeId = documentTypeID;
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.expenseId"), documentTypeID, "STRING_VARIABLE", "ExpenseId", expenseId));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.attachmentLoc"), documentTypeID, "STRING_VARIABLE", "AttachmentLoc", attachmentLoc));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.expenseLineId"), documentTypeID, "STRING_VARIABLE", "ExpenseLineId", expenseLineId));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.attachmentSequence"), documentTypeID, "STRING_VARIABLE", "AttachmentSequence", attachmentSequence));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.userId"), documentTypeID, "STRING_VARIABLE", "UserId", operId));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.date"), documentTypeID, "DATE", "Date", date));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.employeeId"), employeeId, "STRING_VARIABLE", "EmployeeId", employeeId));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.creationDate"), creationDate, "DATE", "CreationDate", creationDate));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.businessPurpose"), businessPurpose, "STRING_VARIABLE", "BusinessPurpose", businessPurpose));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.description"), description, "STRING_VARIABLE", "Description", description));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.zipCode"), description, "STRING_VARIABLE", "ZipCode", zipCode));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.Reference"), description, "STRING_VARIABLE", "Reference", reference));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.fromDate"), creationDate, "DATE", "FromDate", fromDate));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.toDate"), creationDate, "DATE", "ToDate", toDate));
 
-            HttpEntity entity = new StringEntity(buildMetadataJSON_(docFinityID, expenseId, attachmentLoc, expenseLineId,
-                    attachmentSequence, operId, date, businessPurpose, description, zipCode, reference, fromDate, toDate, creationDate, employeeId));
-            post.setEntity(entity);
-
-            response = client.execute(post);
-
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            int status = response.getCode();
-            System.out.println("HTTP RESPONSE CODE: " + response);
-            if(status != 204 && status != 200) {
-                throw new Exception("Unable to index metadata. docfinityId" + docFinityID + "operId " + operId + " HTTP RESPONSE CODE: " + response);
-            }
-        }finally{
-            if(client != null){try{client.close();}catch(Exception e){}}
-            if(response != null){try{response.close();}catch(Exception e){}}
-        }
-    }
-
-    public void deleteFile(String docFinityID, String operID) {
-        CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
-
-        try{
-            client = HttpClients.createDefault();
-            HttpPost post = new HttpPost(properties.getProperty("delete.servlet.url"));
-            post.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getProperty("api.key"));
-            String uuid = UUID.randomUUID().toString();
-            post.setHeader("X-XSRF-TOKEN", uuid);
-            post.setHeader("X-AUDITUSER", operID);
-            post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
-            post.setHeader("Content-Type", "application/json");
-
-            HttpEntity entity = new StringEntity("[\"" + docFinityID + "\"]");
-
-            post.setEntity(entity);
-
-            response = client.execute(post);
-            int status = response.getCode();
-            System.out.println("HTTP RESPONSE CODE: " + response);
-            if(status != 204 && status != 200) {
-                throw new Exception("Unable to delete document. docfinityId" + docFinityID + "operId " + operID + " HTTP RESPONSE CODE: " + response);
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally{
-            if(client != null){try{client.close();}catch(Exception e){}}
-            if(response != null){try{response.close();}catch(Exception e){}}
-        }
-    }
-
-    public void commitMetadata(String docFinityID, String operId) throws Exception {
-        CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
-
-        try{
-            client = HttpClients.createDefault();
-            HttpPost post = new HttpPost(properties.getProperty("commit.url"));
-            post.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getProperty("api.key"));
-            String uuid = UUID.randomUUID().toString();
-            post.setHeader("X-XSRF-TOKEN", uuid);
-            post.setHeader("X-AUDITUSER", operId);
-            post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
-            post.setHeader("Content-Type", "application/json");
-
-            com.beastute.commit.Root root = new com.beastute.commit.Root();
-            root.id = "UPLOADS";
-            ArrayList<String> list = new ArrayList<>();
-            list.add(docFinityID);
-            root.documentIds = list;
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(root);
-            System.out.println(json);
-            HttpEntity entity = new StringEntity(json);
-            post.setEntity(entity);
-
-            response = client.execute(post);
-            int status = response.getCode();
-
-            System.out.println(response);
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
-            if(status != 204 && status != 200) {
-                throw new Exception("Unable to commit metadata document " + docFinityID + ".");
-            }
-        }finally{
-            if(client != null){try{client.close();}catch(Exception e){}}
-            if(response != null){try{response.close();}catch(Exception e){}}
-        }
-    }
-
-    private String buildMetadataJSON_(String docFinityID, String expenseId, String attachmentLoc,
-                                     String expenseLineId, String attachmentSequence, String operId, String date,
-                                      String businessPurpose, String description, String zipCode, String reference,
-                                      String fromDate, String toDate, String creationDate, String employeeId){
-        String json = null;
-        try {
-            DocumentIndexingDTO myArray = new DocumentIndexingDTO();
-            myArray.documentId = docFinityID;
-            String documentTypeID = properties.getProperty("metadata.documentTypeId");
-            myArray.documentTypeId = documentTypeID;
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseId"), documentTypeID, "STRING_VARIABLE", "ExpenseId", expenseId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentLoc"), documentTypeID, "STRING_VARIABLE", "AttachmentLoc", attachmentLoc));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.expenseLineId"), documentTypeID, "STRING_VARIABLE", "ExpenseLineId", expenseLineId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.attachmentSequence"), documentTypeID, "STRING_VARIABLE", "AttachmentSequence", attachmentSequence));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.userId"), documentTypeID, "STRING_VARIABLE", "UserId", operId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.date"), documentTypeID, "DATE", "Date", date));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.employeeId"), employeeId, "STRING_VARIABLE", "EmployeeId", employeeId));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.creationDate"), creationDate, "DATE", "CreationDate", creationDate));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.businessPurpose"), businessPurpose, "STRING_VARIABLE", "BusinessPurpose", businessPurpose));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.description"), description, "STRING_VARIABLE", "Description", description));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.zipCode"), description, "STRING_VARIABLE", "ZipCode", zipCode));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.Reference"), description, "STRING_VARIABLE", "Reference", reference));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.fromDate"), creationDate, "DATE", "FromDate", fromDate));
-            myArray.addDto(buildIndexDto(properties.getProperty("metadata.toDate"), creationDate, "DATE", "ToDate", toDate));
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            json = objectMapper.writeValueAsString(new DocumentIndexingDTO[]{myArray});
-            System.out.println(json);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return json;
-    }
-
-    private DocumentIndexingMetadataDto buildIndexDto(String metadataId, String docTypeId, String type,
-                                                      String metadataName, String value){
-        DocumentIndexingMetadataDto dto = new DocumentIndexingMetadataDto();
-        dto.metadataId = metadataId;
-        dto.documentTypeId = docTypeId;
-        dto.type = type;
-        dto.overrideError = true;
-        dto.metadataName = metadataName;
-        dto.value = value;
-        return dto;
+        super.indexMetadata(documentIndexingDTO, operId);
     }
 
     public static void main(String[] args) throws Exception {
