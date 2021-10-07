@@ -80,36 +80,42 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
     public void indexMetadata(String docFinityID, String accountingPeriod, String attachmentLoc,
                               String attachmentSequence, String operId, String businessUnit, String description,
                               String enteredBy, String fiscalYear, String journalDate, String journalId,
-                              String ledgerGroup, String reversal, String source, String unpostSequence,
-                              String employeeId) throws Exception {
+                              String ledgerGroup, String reversal, String source, String unpostSequence) throws Exception {
         DocumentIndexingDTO documentIndexingDTO = new DocumentIndexingDTO();
         documentIndexingDTO.documentId = docFinityID;
-        String documentTypeID = properties.getProperty("metadata.documentTypeId");
+        String documentTypeID = properties.getProperty("metadata.journals.documentTypeId");
         documentIndexingDTO.documentTypeId = documentTypeID;
-
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.accountingPeriod"), documentTypeID, "STRING_VARIABLE", "AccountingPeriod", accountingPeriod));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.attachmentLoc"), documentTypeID, "STRING_VARIABLE", "AttachmentLoc", attachmentLoc));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.attachmentSequence"), documentTypeID, "STRING_VARIABLE", "AttachmentSequence", attachmentSequence));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.businessUnit"), documentTypeID, "STRING_VARIABLE", "BusinessUnit", businessUnit));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.description"), documentTypeID, "STRING_VARIABLE", "Description", description));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.enteredBy"), documentTypeID, "STRING_VARIABLE", "EnteredBy", enteredBy));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.fiscalYear"), documentTypeID, "STRING_VARIABLE", "FiscalYear", fiscalYear));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.journalDate"), documentTypeID, "DATE", "JournalDate", journalDate));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.journalId"), documentTypeID, "STRING_VARIABLE", "JournalId", journalId));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.ledgerGroup"), documentTypeID, "STRING_VARIABLE", "LedgerGroup", ledgerGroup));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.reversal"), documentTypeID, "STRING_VARIABLE", "Reversal", reversal));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.source"), documentTypeID, "STRING_VARIABLE", "Source", source));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.unpostSequence"), documentTypeID, "STRING_VARIABLE", "UnpostSequence", source));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.userId"), documentTypeID, "STRING_VARIABLE", "userId", operId));
         super.indexMetadata(documentIndexingDTO, operId);
     }
 
     public static void main(String[] args) throws Exception {
         //This is to allow me to change this location without breaking your env.
         String propertiesFileLocation = System.getenv("propertiesFileLocation");
-        if (propertiesFileLocation == null) {
-            propertiesFileLocation = "/Users/jfinlins/Downloads/docfinity/docfinity.properties";
-        }
-        //This is to allow me to change this location without breaking your env.
-        String uploadFileLocation = System.getenv("uploadFileLocation");
-        if (uploadFileLocation == null) {
-            uploadFileLocation = "/Users/jfinlins/Downloads/docfinity/test.pdf";
-        }
 
-        String operId = "JFINLINS";
-        JournalVoucherDocfinityInterface docfinity = new JournalVoucherDocfinityInterface(propertiesFileLocation);
-        String docId = docfinity.uploadFile(uploadFileLocation, operId);
-        System.out.println(docId);
-//        docfinity.indexMetadata(docId, "1", "L", "1", "2", operId, "",
-//                "", "", "", "", "", "", "", "");
-        docfinity.commitMetadata(docId, operId);
+        //for (int i = 0; i < 10; i++) {
+            JournalVoucherDocfinityInterface jvdi = new JournalVoucherDocfinityInterface(propertiesFileLocation);
 
-        docfinity.deleteFile(docId, operId);
+        //    String docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
+
+        //    jvdi.indexMetadata(docId, "1", "/user/home/", "1", "jfinlins", "AP", "Testing 00"+i, "Joe Finlinson", "2021", System.currentTimeMillis()+"", i+"", "AA", "0", "M", "0");
+
+        //    jvdi.commitMetadata(docId, "JFINLINS");
+       // }
+
+        jvdi.deleteFile("00000001fhdw1k87d2hqpxmx41s4xj2x", "jfinlins");
     }
 }
