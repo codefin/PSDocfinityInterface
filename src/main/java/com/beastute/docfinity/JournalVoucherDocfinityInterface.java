@@ -97,7 +97,7 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.ledgerGroup"), documentTypeID, "STRING_VARIABLE", "LedgerGroup", ledgerGroup));
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.reversal"), documentTypeID, "STRING_VARIABLE", "Reversal", reversal));
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.source"), documentTypeID, "STRING_VARIABLE", "Source", source));
-        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.unpostSequence"), documentTypeID, "STRING_VARIABLE", "UnpostSequence", source));
+        documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.unpostSequence"), documentTypeID, "STRING_VARIABLE", "UnpostSequence", unpostSequence));
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.userId"), documentTypeID, "STRING_VARIABLE", "userId", operId));
         super.indexMetadata(documentIndexingDTO, operId);
     }
@@ -106,16 +106,17 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
         //This is to allow me to change this location without breaking your env.
         String propertiesFileLocation = System.getenv("propertiesFileLocation");
 
-        //for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             JournalVoucherDocfinityInterface jvdi = new JournalVoucherDocfinityInterface(propertiesFileLocation);
 
-        //    String docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
+            String docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
 
-        //    jvdi.indexMetadata(docId, "1", "/user/home/", "1", "jfinlins", "AP", "Testing 00"+i, "Joe Finlinson", "2021", System.currentTimeMillis()+"", i+"", "AA", "0", "M", "0");
+            //00000001fhr98z7ggk5w82fyvq5gfreg,1,1,DCROCKER,SPOKA,PAYROLL,DCROCKER,2021,PY,0210905,51631923200000,ACTUALS,N,PAY,0
+           jvdi.indexMetadata(docId, "1", "1", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "51631923200000", "0210905", "ACTUALS", "N", "PAY", "0");
 
-        //    jvdi.commitMetadata(docId, "JFINLINS");
-       // }
+            jvdi.commitMetadata(docId, "JFINLINS");
+        }
 
-        jvdi.deleteFile("00000001fhdw1k87d2hqpxmx41s4xj2x", "jfinlins");
+        //jvdi.deleteFile("00000001fhdw1k87d2hqpxmx41s4xj2x", "jfinlins");
     }
 }
