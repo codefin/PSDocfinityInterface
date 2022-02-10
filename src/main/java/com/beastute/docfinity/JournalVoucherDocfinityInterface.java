@@ -81,6 +81,25 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
                               String attachmentSequence, String operId, String businessUnit, String description,
                               String enteredBy, String fiscalYear, String journalDate, String journalId,
                               String ledgerGroup, String reversal, String source, String unpostSequence) throws Exception {
+
+        super.indexMetadata(buildDocumentIndexingDTO(docFinityID,accountingPeriod, attachmentLoc, attachmentSequence,
+                operId, businessUnit, description, enteredBy, fiscalYear, journalDate, journalId, ledgerGroup, reversal, source, unpostSequence), operId);
+    }
+
+    public void reindexMetadata(String docFinityID, String accountingPeriod, String attachmentLoc,
+                              String attachmentSequence, String operId, String businessUnit, String description,
+                              String enteredBy, String fiscalYear, String journalDate, String journalId,
+                              String ledgerGroup, String reversal, String source, String unpostSequence) throws Exception {
+
+        super.reindexMetadata(buildDocumentIndexingDTO(docFinityID,accountingPeriod, attachmentLoc, attachmentSequence,
+                operId, businessUnit, description, enteredBy, fiscalYear, journalDate, journalId, ledgerGroup, reversal, source, unpostSequence), operId);
+    }
+
+    private DocumentIndexingDTO buildDocumentIndexingDTO(String docFinityID, String accountingPeriod, String attachmentLoc,
+                                                         String attachmentSequence, String operId, String businessUnit, String description,
+                                                         String enteredBy, String fiscalYear, String journalDate, String journalId,
+                                                         String ledgerGroup, String reversal, String source, String unpostSequence)
+    {
         DocumentIndexingDTO documentIndexingDTO = new DocumentIndexingDTO();
         documentIndexingDTO.documentId = docFinityID;
         String documentTypeID = properties.getProperty("metadata.journals.documentTypeId");
@@ -99,22 +118,27 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.source"), documentTypeID, "STRING_VARIABLE", "Source", source));
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.unpostSequence"), documentTypeID, "STRING_VARIABLE", "UnpostSequence", unpostSequence));
         documentIndexingDTO.addDto(buildIndexDto(properties.getProperty("metadata.journals.userId"), documentTypeID, "STRING_VARIABLE", "userId", operId));
-        super.indexMetadata(documentIndexingDTO, operId);
+        return documentIndexingDTO;
     }
 
     public static void main(String[] args) throws Exception {
         //This is to allow me to change this location without breaking your env.
         String propertiesFileLocation = System.getenv("propertiesFileLocation");
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 1; i < 201; i++) {
             JournalVoucherDocfinityInterface jvdi = new JournalVoucherDocfinityInterface(propertiesFileLocation);
 
             String docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
 
             //00000001fhr98z7ggk5w82fyvq5gfreg,1,1,DCROCKER,SPOKA,PAYROLL,DCROCKER,2021,PY,0210905,51631923200000,ACTUALS,N,PAY,0
-           jvdi.indexMetadata(docId, "1", "1", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "51631923200000", "0210905", "ACTUALS", "N", "PAY", "0");
+            //00000001fhtjnh2n6x9xyw7r79qr53dz-9-H-1-DCROCKER-SPOKA-PAYROLL-DCROCKER-2021-1631923200000-PY02109055-ACTUALS-N-PAY-0
+           jvdi.indexMetadata(docId, "9", "H", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "1631923200000", "PY02109055", "ACTUALS", "N", "PAY", "0");
 
             jvdi.commitMetadata(docId, "JFINLINS");
+
+            //jvdi.reindexMetadata(docId, "9", "H", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "1631923200000", "PY02109055", "ACTUALS", "N", "PAY", "0");
+
+            //jvdi.commitMetadata(docId, "JFINLINS");
         }
 
         //jvdi.deleteFile("00000001fhdw1k87d2hqpxmx41s4xj2x", "jfinlins");
