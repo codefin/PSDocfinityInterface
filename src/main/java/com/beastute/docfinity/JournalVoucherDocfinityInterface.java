@@ -124,11 +124,12 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
     public static void main(String[] args) throws Exception {
         //This is to allow me to change this location without breaking your env.
         String propertiesFileLocation = System.getenv("propertiesFileLocation");
+        String docId = "";
+        JournalVoucherDocfinityInterface jvdi = new JournalVoucherDocfinityInterface(propertiesFileLocation);
+        for (int i = 1; i < 2; i++) {
 
-        for (int i = 1; i < 201; i++) {
-            JournalVoucherDocfinityInterface jvdi = new JournalVoucherDocfinityInterface(propertiesFileLocation);
 
-            String docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
+            docId = jvdi.uploadFile("/Users/jfinlins/Downloads/test.pdf", "JFINLINS");
 
             //00000001fhr98z7ggk5w82fyvq5gfreg,1,1,DCROCKER,SPOKA,PAYROLL,DCROCKER,2021,PY,0210905,51631923200000,ACTUALS,N,PAY,0
             //00000001fhtjnh2n6x9xyw7r79qr53dz-9-H-1-DCROCKER-SPOKA-PAYROLL-DCROCKER-2021-1631923200000-PY02109055-ACTUALS-N-PAY-0
@@ -136,11 +137,11 @@ public class JournalVoucherDocfinityInterface extends BaseDocfinityInterface {
 
             jvdi.commitMetadata(docId, "JFINLINS");
 
-            //jvdi.reindexMetadata(docId, "9", "H", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "1631923200000", "PY02109055", "ACTUALS", "N", "PAY", "0");
+            jvdi.reindexMetadata(docId, "9", "H", "1", "DCROCKER", "SPOKA", "PAYROLL"+i, "DCROCKER", "2021", "1631923200000", "PY02109055", "ACTUALS", "N", "PAY", "0");
 
-            //jvdi.commitMetadata(docId, "JFINLINS");
+            jvdi.commitMetadata(docId, "JFINLINS");
         }
 
-        //jvdi.deleteFile("00000001fhdw1k87d2hqpxmx41s4xj2x", "jfinlins");
+        jvdi.deleteFile(docId, "jfinlins");
     }
 }

@@ -273,8 +273,9 @@ public class BaseDocfinityInterface {
             post.setHeader("X-AUDITUSER", operID);
             post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
             post.setHeader("Content-Type", "application/json");
-
-            HttpEntity entity = new StringEntity("[\"" + docFinityID + "\"]");
+            String deleteId = "[\"" + docFinityID + "\"]";
+            System.out.println(deleteId);
+            HttpEntity entity = new StringEntity(deleteId);
 
             post.setEntity(entity);
 
