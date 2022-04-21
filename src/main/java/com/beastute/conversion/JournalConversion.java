@@ -23,7 +23,7 @@ public class JournalConversion {
 
         Instant start;
         Instant end;
-        ArrayList<Long> durations = new ArrayList<Long>();
+        ArrayList<Long> durations = new ArrayList<>();
 
         Connection connection = null;
         Statement statement = null;
@@ -59,7 +59,7 @@ public class JournalConversion {
                  , A.FISCAL_YEAR
                  , A.OPRID
                   FROM PS_JRNL_HEADER A
-                 WHERE 
+                 WHERE
                  A.FISCAL_YEAR = '2018'
                  AND NOT EXISTS (
                  SELECT 'X'
@@ -74,7 +74,7 @@ public class JournalConversion {
                  WHERE A.BUSINESS_UNIT = C.BUSINESS_UNIT
                    AND A.JOURNAL_ID = C.JOURNAL_ID
                    AND A.JOURNAL_DATE = C.JOURNAL_DATE
-                   AND A.UNPOST_SEQ = C.UNPOST_SEQ) 
+                   AND A.UNPOST_SEQ = C.UNPOST_SEQ)
                """);
           if(resultSet != null) {
               while(resultSet.next())
@@ -126,9 +126,9 @@ public class JournalConversion {
 
                           moreAttInfoPstmt = connection.prepareStatement("""
                                   SELECT ATTACHSYSFILENAME
-                                  , ATTACHUSERFILE 
-                                  FROM PS_PV_ATTACHMENTS 
-                                  WHERE SCM_ATTACH_ID = ? 
+                                  , ATTACHUSERFILE
+                                  FROM PS_PV_ATTACHMENTS
+                                  WHERE SCM_ATTACH_ID = ?
                                   AND ATT_VERSION = ?
                                   """);
                           moreAttInfoPstmt.setString(1, attachmentId);
@@ -164,7 +164,8 @@ public class JournalConversion {
                                       jvdi.indexMetadata(docId, accountingPeriod, "h", "1", operId, businessUnit, descr254, operId, fiscalYear, journalDate.getTime() + "", journalId, ledgerGroup, reversalCode, source, unpostSeq);
                                       jvdi.commitMetadata(docId, operId);
                                       File file = new File(path);
-                                      file.delete();
+                                      if(!file.delete())
+                                          System.out.println("Unable to delete file from filesystem: " + path);
 
                                       customTablePstmt = connection.prepareStatement("""
                                               INSERT INTO PS_SPO_GL_DOCF_TBL
@@ -206,7 +207,7 @@ public class JournalConversion {
                                   for(long l : durations){
                                       sum = sum + l;
                                   }
-                                  double average = sum/durations.size();
+                                  double average = (double)sum/durations.size();
 
                                   System.out.println(dateFormat.format(new Date(System.currentTimeMillis())) + " Converted " + usrfilename + " " + docId + " " + docCount++ + " " + time + "s " + average + "s");
                               }
@@ -220,8 +221,8 @@ public class JournalConversion {
             if(customTablePstmt != null)try{customTablePstmt.close();}catch (Exception e){e.printStackTrace();}
             if(getFileRset != null)try{getFileRset.close();}catch (Exception e){e.printStackTrace();}
             if(getFilePstmt != null)try{getFilePstmt.close();}catch (Exception e){e.printStackTrace();}
-            if(moreAttInfoRset != null)try{getFilePstmt.close();}catch (Exception e){e.printStackTrace();}
-            if(moreAttInfoPstmt != null)try{getFilePstmt.close();}catch (Exception e){e.printStackTrace();}
+            if(moreAttInfoRset != null)try{moreAttInfoRset.close();}catch (Exception e){e.printStackTrace();}
+            if(moreAttInfoPstmt != null)try{moreAttInfoPstmt.close();}catch (Exception e){e.printStackTrace();}
             if(attachmentInfoRset != null)try{attachmentInfoRset.close();}catch (Exception e){e.printStackTrace();}
             if(attachmentInfoPstmt != null)try{attachmentInfoPstmt.close();}catch (Exception e){e.printStackTrace();}
             if(resultSet != null)try{resultSet.close();}catch (Exception e){e.printStackTrace();}
