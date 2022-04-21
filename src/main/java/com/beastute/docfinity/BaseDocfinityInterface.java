@@ -83,10 +83,7 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.UUID;
@@ -111,6 +108,20 @@ public class BaseDocfinityInterface {
     }
 
     public String uploadFile(String filePath, String operID) throws Exception {
+        FileInputStream fis = null;
+        File f = null;
+        String returnValue = null;
+        try {
+            f = new File(filePath);
+            fis = new FileInputStream(f);
+           returnValue = uploadFile(fis, f.getName(), f.getPath(), operID);
+        }finally{
+            if(fis != null){try{fis.close();}catch(Exception e){}}
+        }
+        return returnValue;
+    }
+
+    public String uploadFile(InputStream fis, String fileName, String filePath, String operID) throws Exception {
         CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
         StringBuilder sb = null;
@@ -120,8 +131,6 @@ public class BaseDocfinityInterface {
         HttpEntity responseEntity = null;
         InputStreamReader isr = null;
         BufferedReader rd = null;
-        FileInputStream fis = null;
-        File f = null;
 
         try{
             client = HttpClients.createDefault();
@@ -132,24 +141,16 @@ public class BaseDocfinityInterface {
             post.setHeader("X-AUDITUSER", operID);
             post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
 
-            f = new File(filePath);
-            fis = new FileInputStream(f);
-            //data = MultipartEntityBuilder.create()
-            //        .setMode(HttpMultipartMode.LEGACY)
-            //        .addBinaryBody("upload_files", file, ContentType.DEFAULT_BINARY, file.getName())
-            //        .addTextBody("entryMethod", "", ContentType.DEFAULT_BINARY)
-            //        .build();
-            //post.setEntity(data);
             meb = MultipartEntityBuilder.create();
             meb.addTextBody("entryMethod", "", ContentType.TEXT_PLAIN);
-            meb.addBinaryBody("file", fis, ContentType.APPLICATION_OCTET_STREAM, f.getName());
+            meb.addBinaryBody("file", fis, ContentType.APPLICATION_OCTET_STREAM, fileName);
             me = meb.build();
             post.setEntity(me);
 
             response = client.execute(post);
 
             int status = response.getCode();
-            System.out.println("docfinity upload api- HTTP RESPONSE CODE: " + response);
+            //System.out.println("docfinity upload api- HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to create document." + filePath + " user " + operID + " HTTP RESPONSE CODE: " + response);
             }
@@ -159,7 +160,7 @@ public class BaseDocfinityInterface {
             String line;
             sb = new StringBuilder();
             while ((line = rd.readLine()) != null) {
-                System.out.println(line);
+                //System.out.println(line);
                 sb.append(line);
             }
         } finally {
@@ -201,15 +202,15 @@ public class BaseDocfinityInterface {
 
             responseEntity = response.getEntity();
             isr = new InputStreamReader(responseEntity.getContent());
-            rd = new BufferedReader(isr);
+            //rd = new BufferedReader(isr);
 
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
+            //String line;
+            //while ((line = rd.readLine()) != null) {
+            //    System.out.println(line);
+            //}
 
             int status = response.getCode();
-            System.out.println("docfinity index metadata api- HTTP RESPONSE CODE: " + response);
+            //System.out.println("docfinity index metadata api- HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to index metadata. docfinityId" + documentIndexingDTO.documentId + "operId " + operId + " HTTP RESPONSE CODE: " + response);
             }
@@ -243,14 +244,14 @@ public class BaseDocfinityInterface {
 
             response = client.execute(post);
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
+            //BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            //String line;
+            //while ((line = rd.readLine()) != null) {
+            //    System.out.println(line);
+            //}
 
             int status = response.getCode();
-            System.out.println("docfinity reindex metadata api- HTTP RESPONSE CODE: " + response);
+            //System.out.println("docfinity reindex metadata api- HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to reindex metadata. docfinityId" + documentIndexingDTO.documentId + "operId " + operId + " HTTP RESPONSE CODE: " + response);
             }
@@ -274,14 +275,14 @@ public class BaseDocfinityInterface {
             post.setHeader("Cookie", "XSRF-TOKEN=" + uuid);
             post.setHeader("Content-Type", "application/json");
             String deleteId = "[\"" + docFinityID + "\"]";
-            System.out.println(deleteId);
+            //System.out.println(deleteId);
             HttpEntity entity = new StringEntity(deleteId);
 
             post.setEntity(entity);
 
             response = client.execute(post);
             int status = response.getCode();
-            System.out.println("docfinity delete api- HTTP RESPONSE CODE: " + response);
+            //System.out.println("docfinity delete api- HTTP RESPONSE CODE: " + response);
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to delete document. docfinityId" + docFinityID + "operId " + operID + " HTTP RESPONSE CODE: " + response);
             }
@@ -320,24 +321,23 @@ public class BaseDocfinityInterface {
 
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(root);
-            System.out.println(json);
+            //System.out.println(json);
             entity = new StringEntity(json);
             post.setEntity(entity);
 
             response = client.execute(post);
             int status = response.getCode();
-            System.out.println("docfinity commit api- HTTP RESPONSE CODE: " + status);
+            //System.out.println("docfinity commit api- HTTP RESPONSE CODE: " + status);
+            //System.out.println(response);
 
-            System.out.println(response);
+            //responseEntity = response.getEntity();
+            //isr = new InputStreamReader(responseEntity.getContent());
+            //rd = new BufferedReader(isr);
 
-            responseEntity = response.getEntity();
-            isr = new InputStreamReader(responseEntity.getContent());
-            rd = new BufferedReader(isr);
-
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.println(line);
-            }
+            //String line;
+            //while ((line = rd.readLine()) != null) {
+            //    System.out.println(line);
+            //}
             if(status != 204 && status != 200) {
                 throw new Exception("Unable to commit metadata document " + docFinityID + ".");
             }
@@ -357,7 +357,7 @@ public class BaseDocfinityInterface {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             json = objectMapper.writeValueAsString(new DocumentIndexingDTO[]{documentIndexingDTO});
-            System.out.println(json);
+            //System.out.println(json);
         } catch (Exception e){
             e.printStackTrace();
         }
