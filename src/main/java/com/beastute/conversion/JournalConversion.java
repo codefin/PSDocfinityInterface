@@ -145,7 +145,7 @@ public class JournalConversion {
                                           """);
                                   getFilePstmt.setString(1, sysfilename);
                                   getFileRset = getFilePstmt.executeQuery();
-                                  String path = "C:\\Users\\ASTUTE\\Downloads\\" + usrfilename; //TODO: pull out to envvar
+                                  String path = System.getenv("writePath") + usrfilename;
                                   if (getFileRset != null)
                                       while (getFileRset.next()) {
                                           //peoplesoft stores the binary for a file across multiple records
